@@ -1,0 +1,14 @@
+# Name: Dependency Graph
+# Description: Show service dependency relationships
+# Menu: Dependency Graph
+
+plugin_run() {
+  MASTER_COMPOSE="${DOCKERDIR}/docker-compose.yml"
+
+  clear
+  echo "DEPENDENCY GRAPH"
+  echo
+  docker compose -f "$MASTER_COMPOSE" config | grep -A3 depends_on
+  echo
+  pause
+}

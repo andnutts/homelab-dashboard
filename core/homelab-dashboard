@@ -1,0 +1,206 @@
+#!/bin/bash
+
+# ============================================================
+#   HOMELAB INTERACTIVE DASHBOARD
+#   Manage ACME, NPM, MariaDB, and Diagnostics
+# ============================================================
+
+# Colors
+RED="\e[31m"
+GREEN="\e[32m"
+YELLOW="\e[33m"
+BLUE="\e[34m"
+CYAN="\e[36m"
+RESET="\e[0m"
+
+# Containers
+ACME="acme"
+NPM="nginx"
+DB="npm_mdb"
+
+# Banner
+banner() {
+  echo -e "${CYAN}"
+  echo "==============================================="
+  echo "        HOMELAB MANAGEMENT DASHBOARD"
+  echo "==============================================="
+  echo -e "${RESET}"
+}
+
+pause() {
+  echo
+  read -p "Press ENTER to continue..."
+}
+
+# ============================================================
+#   ACME FUNCTIONS
+# ============================================================
+
+acme_register() {
+  read -p "Enter email for Let's Encrypt: " email
+  docker exec -it $ACME acme.sh --register-account -m "$email" --server letsencrypt
+  pause
+}
+
+acme_issue() {
+  read -p "Enter primary domain (example.com): " domain
+  read -p "Enter wildcard domain (*.example.com): " wildcard
+
+  docker exec -it $ACME acme.sh \
+    --issue \
+    --dns dns_cf \
+    -d "$domain" \
+    -d "$wildcard" \
+    --keylength ec-256 \
+    --server letsencrypt
+
+  pause
+}
+
+acme_install() {
+  read -p "Enter domain to install cert for: " domain
+
+  docker exec -it $ACME acme.sh \
+    --install-cert \
+    -d "$domain" \
+    --ecc \
+    --key-file       /etc/letsencrypt/live/$domain/privkey.pem \
+    --fullchain-file /etc/letsencrypt/live/$domain/fullchain.pem \
+    --reloadcmd     "sh /acme-reload-nginx.sh"
+
+  pause
+}
+
+acme_menu() {
+  while true; do
+    clear
+    banner
+    echo -e "${BLUE}ACME / CERTIFICATE MANAGEMENT${RESET}"
+    echo "1) Register ACME account"
+    echo "2) Issue certificate"
+    echo "3) Install certificate"
+    echo "4) View ACME logs"
+    echo "0) Back"
+    echo
+    read -p "Select an option: " choice
+
+    case $choice in
+      1) acme_register ;;
+      2) acme_issue ;;
+      3) acme_install ;;
+      4) docker logs $ACME | tail -n 50; pause ;;
+      0) break ;;
+      *) echo "Invalid option"; sleep 1 ;;
+    esac
+  done
+}
+
+# ============================================================
+#   NGINX PROXY MANAGER FUNCTIONS
+# ============================================================
+
+npm_menu() {
+  while true; do
+    clear
+    banner
+    echo -e "${BLUE}NGINX PROXY MANAGER${RESET}"
+    echo "1) Restart NPM"
+    echo "2) View NPM logs"
+    echo "3) Check NPM health"
+    echo "0) Back"
+    echo
+    read -p "Select an option: " choice
+
+    case $choice in
+      1) docker restart $NPM; pause ;;
+      2) docker logs $NPM | tail -n 50; pause ;;
+      3) docker inspect --format='{{json .State.Health}}' $NPM | jq; pause ;;
+      0) break ;;
+      *) echo "Invalid option"; sleep 1 ;;
+    esac
+  done
+}
+
+# ============================================================
+#   MARIADB FUNCTIONS
+# ============================================================
+
+db_backup() {
+  ts=$(date +%Y%m%d_%H%M)
+  file="npm_backup_$ts.sql"
+  docker exec $DB mysqldump -u root -p$(cat $DOCKERDIR/secrets/db_root_pwd.txt) npm > "$file"
+  echo "Backup saved to $file"
+  pause
+}
+
+db_menu() {
+  while true; do
+    clear
+    banner
+    echo -e "${BLUE}MARIADB MANAGEMENT${RESET}"
+    echo "1) Backup database"
+    echo "2) View DB logs"
+    echo "3) Check DB health"
+    echo "0) Back"
+    echo
+    read -p "Select an option: " choice
+
+    case $choice in
+      1) db_backup ;;
+      2) docker logs $DB | tail -n 50; pause ;;
+      3) docker inspect --format='{{json .State.Health}}' $DB | jq; pause ;;
+      0) break ;;
+      *) echo "Invalid option"; sleep 1 ;;
+    esac
+  done
+}
+
+# ============================================================
+#   DIAGNOSTICS
+# ============================================================
+
+diagnostics() {
+  clear
+  banner
+  echo -e "${BLUE}SYSTEM DIAGNOSTICS${RESET}"
+  echo
+  echo -e "${YELLOW}Container Status:${RESET}"
+  docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+  echo
+  echo -e "${YELLOW}Disk Usage:${RESET}"
+  df -h | grep -E "Filesystem|/docker|/etc/letsencrypt"
+  echo
+  echo -e "${YELLOW}ACME Certs:${RESET}"
+  ls -R /etc/letsencrypt/live
+  pause
+}
+
+# ============================================================
+#   MAIN MENU
+# ============================================================
+
+main_menu() {
+  while true; do
+    clear
+    banner
+    echo -e "${GREEN}MAIN MENU${RESET}"
+    echo "1) ACME / Certificate Management"
+    echo "2) Nginx Proxy Manager"
+    echo "3) MariaDB"
+    echo "4) Diagnostics"
+    echo "0) Exit"
+    echo
+    read -p "Select an option: " choice
+
+    case $choice in
+      1) acme_menu ;;
+      2) npm_menu ;;
+      3) db_menu ;;
+      4) diagnostics ;;
+      0) exit 0 ;;
+      *) echo "Invalid option"; sleep 1 ;;
+    esac
+  done
+}
+
+main_menu

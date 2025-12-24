@@ -1,0 +1,26 @@
+# Name: Stack Control
+# Description: Start/stop/restart ACME, NPM, MariaDB
+# Menu: Stack Control
+
+plugin_run() {
+  ACME_FILE="${DOCKERDIR}/compose/acme.yml"
+  DB_FILE="${DOCKERDIR}/compose/mariadb.yml"
+  NPM_FILE="${DOCKERDIR}/compose/nginx-ui.yml"
+
+  while true; do
+    clear
+    echo "STACK CONTROL"
+    echo "1) ACME restart"
+    echo "2) NPM restart"
+    echo "3) MariaDB restart"
+    echo "0) Back"
+    read -p "Select: " c
+
+    case $c in
+      1) docker compose -f "$ACME_FILE" restart; pause ;;
+      2) docker compose -f "$NPM_FILE" restart; pause ;;
+      3) docker compose -f "$DB_FILE" restart; pause ;;
+      0) return ;;
+    esac
+  done
+}

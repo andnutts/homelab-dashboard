@@ -1,0 +1,24 @@
+# Name: NPM Proxy Viewer
+# Description: Show proxy hosts from NPM SQLite DB
+# Menu: NPM Proxy Viewer
+
+plugin_run() {
+  DB="${DOCKERDIR}/appdata/nginx-man/data/database.sqlite"
+
+  clear
+  echo "NPM PROXY HOSTS"
+  echo
+
+  sqlite3 "$DB" "
+    SELECT id, domain_names, forward_host, forward_port, enabled
+    FROM proxy_host;
+  " | while IFS='|' read -r id domain host port enabled; do
+    echo "ID: $id"
+    echo "  Domain: $domain"
+    echo "  Forward: $host:$port"
+    echo "  Enabled: $enabled"
+    echo
+  done
+
+  pause
+}

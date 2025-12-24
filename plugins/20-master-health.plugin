@@ -1,0 +1,14 @@
+# Name: Master Health Dashboard
+# Description: Show health of all services in master compose
+# Menu: Master Compose Health
+
+plugin_run() {
+  MASTER_COMPOSE="${DOCKERDIR}/docker-compose.yml"
+
+  clear
+  echo "MASTER COMPOSE HEALTH"
+  echo
+  docker compose -f "$MASTER_COMPOSE" ps
+  echo
+  pause
+}

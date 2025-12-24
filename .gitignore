@@ -1,0 +1,19 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor junk
+*.swp
+*.swo
+
+# Local secrets (never commit)
+secrets/
+.env
+*.key
+*.pem
+
+# Logs
+*.log
+
+# Compiled
+*.pyc

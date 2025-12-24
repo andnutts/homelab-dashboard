@@ -1,0 +1,14 @@
+# Name: Compose Validator
+# Description: Validate master and included compose files
+# Menu: Compose Validator
+
+plugin_run() {
+  MASTER_COMPOSE="${DOCKERDIR}/docker-compose.yml"
+
+  clear
+  echo "VALIDATING MASTER COMPOSE"
+  echo
+  docker compose -f "$MASTER_COMPOSE" config -q && echo "OK" || echo "ERROR"
+  echo
+  pause
+}
