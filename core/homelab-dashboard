@@ -4,7 +4,6 @@
 #   HOMELAB INTERACTIVE DASHBOARD
 #   Manage ACME, NPM, MariaDB, and Diagnostics
 # ============================================================
-
 # Colors
 RED="\e[31m"
 GREEN="\e[32m"
@@ -35,7 +34,6 @@ pause() {
 # ============================================================
 #   ACME FUNCTIONS
 # ============================================================
-
 acme_register() {
   read -p "Enter email for Let's Encrypt: " email
   docker exec -it $ACME acme.sh --register-account -m "$email" --server letsencrypt
@@ -98,7 +96,6 @@ acme_menu() {
 # ============================================================
 #   NGINX PROXY MANAGER FUNCTIONS
 # ============================================================
-
 npm_menu() {
   while true; do
     clear
@@ -124,7 +121,6 @@ npm_menu() {
 # ============================================================
 #   MARIADB FUNCTIONS
 # ============================================================
-
 db_backup() {
   ts=$(date +%Y%m%d_%H%M)
   file="npm_backup_$ts.sql"
@@ -158,7 +154,6 @@ db_menu() {
 # ============================================================
 #   DIAGNOSTICS
 # ============================================================
-
 diagnostics() {
   clear
   banner
@@ -178,7 +173,6 @@ diagnostics() {
 # ============================================================
 #   MAIN MENU
 # ============================================================
-
 main_menu() {
   while true; do
     clear

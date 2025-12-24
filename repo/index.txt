@@ -1,0 +1,4 @@
+stack-control.plugin
+network-topology.plugin
+acme-browser.plugin
+npm-proxy-viewer.plugin
