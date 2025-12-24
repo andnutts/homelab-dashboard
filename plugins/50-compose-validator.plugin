@@ -1,6 +1,8 @@
 # Name: Compose Validator
 # Description: Validate master and included compose files
-# Menu: Compose Validator
+# Category: Diagnostics
+# Version: 1.0.0
+# Requires: docker compose
 
 plugin_run() {
   MASTER_COMPOSE="${DOCKERDIR}/docker-compose.yml"

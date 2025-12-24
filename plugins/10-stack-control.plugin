@@ -1,6 +1,9 @@
 # Name: Stack Control
 # Description: Start/stop/restart ACME, NPM, MariaDB
-# Menu: Stack Control
+# Category: System
+# Version: 1.0.0
+# Requires: docker compose
+ 
 
 plugin_run() {
   ACME_FILE="${DOCKERDIR}/compose/acme.yml"

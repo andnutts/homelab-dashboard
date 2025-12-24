@@ -1,6 +1,8 @@
 # Name: Dependency Graph
 # Description: Show service dependency relationships
-# Menu: Dependency Graph
+# Category: Diagnostics
+# Version: 1.0.0
+# Requires: docker compose
 
 plugin_run() {
   MASTER_COMPOSE="${DOCKERDIR}/docker-compose.yml"

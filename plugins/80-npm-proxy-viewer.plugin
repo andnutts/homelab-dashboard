@@ -1,6 +1,8 @@
 # Name: NPM Proxy Viewer
 # Description: Show proxy hosts from NPM SQLite DB
-# Menu: NPM Proxy Viewer
+# Category: NPM
+# Version: 1.0.0
+# Requires: sqlite3
 
 plugin_run() {
   DB="${DOCKERDIR}/appdata/nginx-man/data/database.sqlite"

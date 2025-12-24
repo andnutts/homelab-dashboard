@@ -1,6 +1,8 @@
 # Name: Master Health Dashboard
 # Description: Show health of all services in master compose
-# Menu: Master Compose Health
+# Category: Diagnostics
+# Version: 1.0.0
+# Requires: docker compose
 
 plugin_run() {
   MASTER_COMPOSE="${DOCKERDIR}/docker-compose.yml"

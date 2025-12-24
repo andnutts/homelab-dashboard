@@ -1,6 +1,8 @@
 # Name: Network Topology
 # Description: Show containers and their networks
-# Menu: Network Topology
+# Category: Networking
+# Version: 1.0.0
+# Requires: docker
 
 plugin_run() {
   clear

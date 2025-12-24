@@ -1,6 +1,8 @@
 # Name: ACME Certificate Browser
 # Description: List domains and certificate expiry
-# Menu: ACME Certificate Browser
+# Category: ACME
+# Version: 1.0.0
+# Requires: openssl
 
 plugin_run() {
   CERT_DIR="${CERTS_DIR/letsencrypt/live"
