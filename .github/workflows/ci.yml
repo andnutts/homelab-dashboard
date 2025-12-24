@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-and-build-repo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up bash & tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Validate plugin metadata
+        run: |
+          PLUGIN_DIR="plugins"
+          fail=0
+
+          for file in "$PLUGIN_DIR"/*.plugin; do
+            [ -f "$file" ] || continue
+            echo "Validating $file"
+
+            name=$(grep -m1 "^# Name:" "$file" | cut -d: -f2- | xargs)
+            desc=$(grep -m1 "^# Description:" "$file" | cut -d: -f2- | xargs)
+            category=$(grep -m1 "^# Category:" "$file" | cut -d: -f2- | xargs)
+            version=$(grep -m1 "^# Version:" "$file" | cut -d: -f2- | xargs)
+
+            if [ -z "$name" ] || [ -z "$desc" ] || [ -z "$category" ] || [ -z "$version" ]; then
+              echo "::error file=$file::Missing required metadata (Name/Description/Category/Version)"
+              fail=1
+            fi
+
+            if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+              echo "::error file=$file::Invalid version format: $version"
+              fail=1
+            fi
+          done
+
+          exit $fail
+
+      - name: Build repo/index.txt and index.json
+        run: |
+          mkdir -p repo
+          : > repo/index.txt
+          : > repo/index.json
+
+          echo "[" >> repo/index.json
+          first=1
+
+          for file in plugins/*.plugin; do
+            [ -f "$file" ] || continue
+            base=$(basename "$file")
+
+            # Copy plugin file into repo/
+            cp "$file" "repo/$base"
+
+            echo "$base" >> repo/index.txt
+
+            name=$(grep -m1 "^# Name:" "$file" | cut -d: -f2- | xargs)
+            desc=$(grep -m1 "^# Description:" "$file" | cut -d: -f2- | xargs)
+            category=$(grep -m1 "^# Category:" "$file" | cut -d: -f2- | xargs)
+            version=$(grep -m1 "^# Version:" "$file" | cut -d: -f2- | xargs)
+
+            entry=$(jq -n \
+              --arg file "$base" \
+              --arg name "$name" \
+              --arg desc "$desc" \
+              --arg category "$category" \
+              --arg version "$version" \
+              '{file: $file, name: $name, description: $desc, category: $category, version: $version}')
+
+            if [ $first -eq 1 ]; then
+              echo "  $entry" >> repo/index.json
+              first=0
+            else
+              echo "  ,$entry" >> repo/index.json
+            fi
+          done
+
+          echo "]" >> repo/index.json
+
+
+      - name: Upload repo artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: repo
